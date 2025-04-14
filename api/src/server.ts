@@ -8,12 +8,14 @@ import { setUpChaBot} from "./menu";
 import path from 'path';
 import { Order } from "./Model/OrderModel";
 
+
 dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server,{cors:{origin:"*"}});
 const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET
+const PORT = process.env.PORT || 3030
 
 app.use(express.json());
 
@@ -73,4 +75,4 @@ setUpChaBot(io);
 
 mongoose.connect(process.env.Mongo_Uri!).then(() => console.log("DB Connected"));
 
-server.listen(3030, () => console.log("Server running on port 3030"));
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -26,6 +26,7 @@ const app = (0, express_1.default)();
 const server = http_1.default.createServer(app);
 const io = new socket_io_1.Server(server, { cors: { origin: "*" } });
 const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET;
+const PORT = process.env.PORT || 3030;
 app.use(express_1.default.json());
 app.get("/", (req, res) => {
     res.sendFile(path_1.default.join(__dirname, "public", "chatbot.html"));
@@ -65,4 +66,4 @@ app.get('/payment-callback', (req, res) => __awaiter(void 0, void 0, void 0, fun
 }));
 (0, menu_1.setUpChaBot)(io);
 mongoose_1.default.connect(process.env.Mongo_Uri).then(() => console.log("DB Connected"));
-server.listen(3030, () => console.log("Server running on port 3030"));
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
