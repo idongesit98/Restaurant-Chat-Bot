@@ -1,0 +1,37 @@
+{
+  "name": "restaurant-chat-bot",
+  "version": "1.0.0",
+  "description": "Restaurant Chat Bot",
+  "license": "ISC",
+  "author": "Idongesit Samuel Robson",
+  "type": "commonjs",
+  "main": "server.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "chat": "npm run build && node dist/server.ts --",
+    "dev": "ts-node src/server.ts --"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.1",
+    "@types/node": "^22.14.0",
+    "@types/node-cron": "^3.0.11",
+    "@types/socket.io": "^3.0.1",
+    "@types/ws": "^8.18.0",
+    "nodemon": "^3.1.9",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "axios": "^1.8.4",
+    "commander": "^13.1.0",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.4.7",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "mongoose": "^8.13.2",
+    "node-cron": "^3.0.3",
+    "socket.io": "^4.8.1",
+    "ws": "^8.18.1"
+  }
+}
