@@ -1,11 +1,13 @@
 import {Server} from "socket.io";
 import { UserSession} from "./Model/SessionModel";
 import { Order } from "./Model/OrderModel";
-import { initializePayment } from "./paystack";
+import { initializePayment } from "./utils/paystack";
 import { ScheduledOrder } from "./Model/ScheduledOrder";
+import { validateUserInput } from "./utils/validator";
+import { text } from "stream/consumers";
 
 
-const menu = [
+export const menu = [
     {id:1, name:"Coconut Rice", price:2000},
     {id:2, name:"Egusi and Fufu/Garri", price:1500},
     {id:3, name:"Afang and Fufu/Garri", price:1500},
@@ -16,6 +18,7 @@ const menu = [
     {id:8, name: "Chicken", price:700},
     {id:9, name: "Beef", price:700}
 ];
+
 
 export const setUpChaBot = (io:Server) =>{
     io.on("connection", async (socket) => {
@@ -37,6 +40,11 @@ export const setUpChaBot = (io:Server) =>{
         sendMainMenu()
 
         socket.on("message", async (msg: string) => {
+            const validation = validateUserInput(msg,session)
+            if (!validation.valid){
+                socket.emit("message",{text:validation.error})
+                return;
+            }
             session = await UserSession.findOne({ deviceId });
             if (!session) return socket.emit("message", { text: "Session not found. Please start again." });
         
@@ -62,6 +70,10 @@ export const setUpChaBot = (io:Server) =>{
             }
         
             switch (trimmedMsg) {
+                case "help":
+                    socket.emit("message",{ text:
+                        "Type:\n1 - View menu and order\n97 - View cart,\n98 - View history,\n0 - Cancel order,\npay - Pay for pending order,\nschedule - Schedule delivery"});
+                    return;                    
                 case "97":
                     socket.emit("message", { text: `Current Order:\n${session.currentOrder.map(item => item.name).join(", ") || "No items yet."}` });
                     return;
@@ -143,6 +155,9 @@ export const setUpChaBot = (io:Server) =>{
                 }
         
                 const selectedItem = menu.find(item => item.id.toString() === trimmedMsg);
+                console.log("Received message:", selectedItem);         
+                console.log("Received message:", trimmedMsg);
+
                 if (selectedItem) {
                     session.currentOrder.push(selectedItem);
                     await session.save();

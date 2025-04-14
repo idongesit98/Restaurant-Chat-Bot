@@ -1,6 +1,6 @@
 import cron from 'node-cron';
-import { ScheduledOrder } from './Model/ScheduledOrder';
-import { Order } from './Model/OrderModel';
+import { ScheduledOrder } from '../Model/ScheduledOrder';
+import { Order } from '../Model/OrderModel';
 
 cron.schedule("* * * * *", async () => {
     const now = new Date();
