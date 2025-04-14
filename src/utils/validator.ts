@@ -4,7 +4,7 @@ export function validateUserInput(msg: string, session: any): { valid: boolean; 
     const trimmed = msg.trim();
 
     if (session.state === "IDLE") {
-        const validInputs = ["1", "97", "98", "0", "pay", "schedule"];
+        const validInputs = ["1", "97", "98", "0", "pay", "schedule","help"];
         if (!validInputs.includes(trimmed)) {
             return { valid: false, error: "Invalid command. Type 1 to order or view options." };
         }

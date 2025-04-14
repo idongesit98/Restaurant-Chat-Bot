@@ -16,7 +16,9 @@ export const menu = [
     {id:6, name: "Fried Rice", price:1500},
     {id:7, name: "Peppered yam and Sauce", price:2000},
     {id:8, name: "Chicken", price:700},
-    {id:9, name: "Beef", price:700}
+    {id:9, name: "Beef", price:700},
+    {id:10,name: "Peppered Snail and Porridge Plantain", price:5000},
+    {id:11,name: "Ofada rice and Sauce/Stew/Banga Stew", price:3000}
 ];
 
 
@@ -34,7 +36,7 @@ export const setUpChaBot = (io:Server) =>{
 
         const sendMainMenu = () => {
             socket.emit("message", {
-                text:"Welcome! Choose an option:\nTo Place an Order enter.......1\nCheckout..........99\nOrder History......98\nCurrent Order.....97\nCancel Order.......0\nTo schedule an order place an order and type schedule, follow the directions  ",
+                text:"Welcome! Choose an option:\nTo Place an Order enter.......1\nCheckout..........99\nOrder History......98\nCurrent Order.....97\nCancel Order.......0\nTo schedule an order place an order and type schedule, follow the directions\nhelp  ",
             });
         }
         sendMainMenu()
@@ -174,56 +176,3 @@ export const setUpChaBot = (io:Server) =>{
         }
     )
 }
-
-
-// default:
-//     if (session.state === "SELECTING") {
-//         if (msg === "0") {
-//             session.currentOrder = [];
-//             session.state = "IDLE";
-//             await session.save();
-//             socket.emit("message", { text: "Order canceled." });
-//             sendMainMenu();
-//             return;
-//         }
-//         if (msg === "99") {
-//             if (session.currentOrder.length === 0) {
-//                 socket.emit("message", { text: "No items selected. Please start over." });
-//             } else {
-//                 await Order.create({ userId: deviceId, items: session.currentOrder, status: "pending" });
-//                 session.orderHistory.push(...session.currentOrder);
-//                 session.currentOrder = [];
-//                 session.state = "IDLE";
-//                 await session.save();
-//                 socket.emit("message", { text: "Order placed! Type 'pay' to make payment." });
-//                 sendMainMenu();
-//             }
-//             return;
-//         }
-
-//         const selectedItem = menu.find(item => item.id.toString() === msg);
-//         console.log("Received message:", selectedItem);
-//         console.log("Received message:", msg);
-        
-//         if(selectedItem){
-//             session.currentOrder.push(selectedItem);
-//             await session.save();
-//             socket.emit("message", {text: `${selectedItem.name} added! Select more,type 99 to checkout or type 0 to cancel.`});
-//         }else  if(msg === "99"){
-//             if (session.currentOrder.length === 0) {
-//                 socket.emit("message", {text: "No items selected. Please start over."});
-//             }else{
-//                 await Order.create({userId:deviceId, items:session.currentOrder,status:"pending"});
-//                 session.orderHistory.push(...session.currentOrder);
-//                 session.currentOrder = [];
-//                 session.state = "IDLE";
-//                 await session.save();
-//                 socket.emit("message",{text: "Order placed! Type 'pay' to make payment."});
-//                 sendMainMenu();
-//             }
-//         }else{
-//             socket.emit("message",{text:"Invalid item. Enter a valid number or 99 to checkout."});
-//         }
-//         return;
-//     }    
-// break;    

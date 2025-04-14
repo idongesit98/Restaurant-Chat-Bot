@@ -1,7 +1,5 @@
 import mongoose from "mongoose";
 
-type SessionState = "IDLE"|"PAYING"|"SELECTING"
-
 const UserSessionSchema = new mongoose.Schema({
     deviceId:{
         type:String,
