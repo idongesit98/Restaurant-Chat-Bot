@@ -15,7 +15,7 @@ An assignment which required i build a restaurant chatbot that will assist custo
 
 ## Installation
 ```sh
-git clone https://github.com/idongesit98/Voting-System.git
+git clone https://github.com/idongesit98/Restaurant-Chat-Bot
 
 cd Restaurant Chatbot directory 
  
