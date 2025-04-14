@@ -21,12 +21,14 @@ cd Restaurant Chatbot directory
  
 npm install 
 
-npm run dev
+npm run build
 ```
 
 # Usages
 ```bash
- On your local browser http://localhost:3030/ 
+ npm run start
+ or
+ hosted url  https://restaurant-chat-bot-zqvt.onrender.com
 ```
 ## Contributing
 Contributions, ideas and suggestions, bug reports are welcome as the project owner is not an island.
