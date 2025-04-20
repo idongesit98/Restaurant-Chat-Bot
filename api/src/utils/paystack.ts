@@ -15,7 +15,7 @@ export const initializePayment = async (email:string,amount:number,deviceId:stri
                 email,
                 amount:amount * 100,
                 currency:"NGN",
-                callback_url:"https://598c-102-90-79-226.ngrok-free.app/payment-success",
+                callback_url:"https://restaurant-chat-bot-zqvt.onrender.com/payment-success",
                 metadata:{
                     deviceId
                 }
