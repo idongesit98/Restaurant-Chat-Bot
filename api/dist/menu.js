@@ -98,7 +98,7 @@ const setUpChaBot = (io) => {
                     }
                     const total = lastOrder.items.reduce((sum, item) => sum + item.price, 0);
                     socket.emit("message", { text: `Your total is #${total}. Processing payment link.....` });
-                    const paymentResponse = yield (0, paystack_1.initializePayment)('customer@gmail.com', total);
+                    const paymentResponse = yield (0, paystack_1.initializePayment)('customer@gmail.com', total, deviceId);
                     if ((_a = paymentResponse === null || paymentResponse === void 0 ? void 0 : paymentResponse.data) === null || _a === void 0 ? void 0 : _a.authorization_url) {
                         socket.emit("message", { text: `Click to pay: ${paymentResponse.data.authorization_url}` });
                     }

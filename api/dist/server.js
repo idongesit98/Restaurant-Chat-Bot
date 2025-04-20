@@ -14,13 +14,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const http_1 = __importDefault(require("http"));
-const axios_1 = __importDefault(require("axios"));
 const socket_io_1 = require("socket.io");
 const mongoose_1 = __importDefault(require("mongoose"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const menu_1 = require("./menu");
 const path_1 = __importDefault(require("path"));
 const OrderModel_1 = require("./Model/OrderModel");
+const paystack_1 = require("./utils/paystack");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const server = http_1.default.createServer(app);
@@ -32,39 +32,44 @@ app.use(express_1.default.static(path_1.default.join(__dirname, 'public')));
 app.get("/", (req, res) => {
     res.sendFile(path_1.default.join(__dirname, "public", "chatbot.html"));
 });
-app.get('/payment-callback', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { reference, trxref } = req.query;
-    try {
-        // Verify the payment with Paystack
-        const verification = yield axios_1.default.get(`https://api.paystack.co/transaction/verify/${reference}`, {
-            headers: {
-                Authorization: `Bearer ${PAYSTACK_SECRET}`
-            }
-        });
-        if (verification.data.data.status === 'success') {
-            const deviceId = verification.data.data.metadata.deviceId;
-            // Update order status
-            yield OrderModel_1.Order.findOneAndUpdate({ paymentReference: reference }, { status: 'completed' });
-            // Find and notify the user
-            const sockets = yield io.fetchSockets();
-            const userSocket = sockets.find(socket => socket.handshake.query.deviceId === deviceId);
-            if (userSocket) {
-                userSocket.emit('message', {
-                    text: 'Payment successful! Thank you for your order.'
-                });
-                userSocket.emit("message", {
-                    text: "Welcome! Choose an option:\nTo Place an Order enter 1\n Checkout 99\n Order History 98\n Current Order 97\n Cancel Order 0",
-                });
-            }
-            return res.redirect('/?payment=success');
+app.post("/paystack/webhook", express_1.default.json({ verify: paystack_1.verifyPaystackSignature }), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const event = req.body;
+    if (event.event === "charge.success") {
+        const { reference, metadata } = event.data;
+        const deviceId = metadata.deviceId;
+        yield OrderModel_1.Order.findOneAndUpdate({ paymentReference: reference }, { status: "completed" });
+        const sockets = yield io.fetchSockets();
+        const userSocket = sockets.find(socket => socket.handshake.query.deviceId === deviceId);
+        if (userSocket) {
+            userSocket.emit("message", { text: "🎉 Payment successful! Thank you for your order." });
+            userSocket.emit("message", {
+                text: "🍽️ Welcome back! Choose an option:\n1. Place Order\n97. Current Order\n98. Order History\n0. Cancel Order"
+            });
         }
-        return res.redirect('/?payment=failed');
     }
-    catch (error) {
-        console.error('Payment verification error:', error);
-        return res.redirect('/?payment=error');
-    }
+    res.sendStatus(200);
 }));
+app.get('/payment-success', (req, res) => {
+    res.send(`
+        <html>
+            <head>
+                <title>Payment Success</title>
+                <style>
+                    body { font-family: sans-serif; text-align: center; padding-top: 50px; }
+                </style>
+            </head>
+            <body>
+                <h2>✅ Payment Successful!</h2>
+                <p>You can now return to the chatbot.</p>
+                <script>
+                    setTimeout(() => {
+                        window.close(); // If opened in a new tab or window
+                    }, 3000);
+                </script>
+            </body>
+        </html>
+    `);
+});
 (0, menu_1.setUpChaBot)(io);
 mongoose_1.default.connect(process.env.Mongo_Uri).then(() => console.log("DB Connected"));
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

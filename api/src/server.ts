@@ -7,6 +7,7 @@ import dotenv from "dotenv";
 import { setUpChaBot} from "./menu";
 import path from 'path';
 import { Order } from "./Model/OrderModel";
+import { verifyPaystackSignature } from "./utils/paystack";
 
 
 dotenv.config();
@@ -25,52 +26,55 @@ app.get("/",(req,res) => {
     res.sendFile(path.join(__dirname,"public","chatbot.html"));
 });
 
-app.get('/payment-callback', async (req: Request, res: Response) => {
-    const { reference, trxref } = req.query;
-    
-    try {
-        // Verify the payment with Paystack
-        const verification = await axios.get(
-            `https://api.paystack.co/transaction/verify/${reference}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${PAYSTACK_SECRET}`
-                }
-            }
+
+app.post("/paystack/webhook", express.json({ verify: verifyPaystackSignature }), async (req, res) => {
+    const event = req.body;
+
+    if (event.event === "charge.success") {
+        const { reference, metadata } = event.data;
+        const deviceId = metadata.deviceId;
+
+        await Order.findOneAndUpdate(
+            { paymentReference: reference },
+            { status: "completed" }
         );
 
-        if (verification.data.data.status === 'success') {
-            const deviceId = verification.data.data.metadata.deviceId;
-            
-            // Update order status
-            await Order.findOneAndUpdate(
-                { paymentReference: reference },
-                { status: 'completed' }
-            );
+        const sockets = await io.fetchSockets();
+        const userSocket = sockets.find(socket =>
+            socket.handshake.query.deviceId === deviceId
+        );
 
-            // Find and notify the user
-            const sockets = await io.fetchSockets();
-            const userSocket = sockets.find(socket => 
-                socket.handshake.query.deviceId === deviceId
-            );
-
-            if (userSocket) {
-                userSocket.emit('message', {
-                    text: 'Payment successful! Thank you for your order.'
-                });
-                userSocket.emit("message", {
-                    text:"Welcome! Choose an option:\nTo Place an Order enter 1\n Checkout 99\n Order History 98\n Current Order 97\n Cancel Order 0",
-                });
-            }
-
-            return res.redirect('/?payment=success');
+        if (userSocket) {
+            userSocket.emit("message", { text: "🎉 Payment successful! Thank you for your order." });
+            userSocket.emit("message", {
+                text: "🍽️ Welcome back! Choose an option:\n1. Place Order\n97. Current Order\n98. Order History\n0. Cancel Order"
+            });
         }
-        
-        return res.redirect('/?payment=failed');
-    } catch (error) {
-        console.error('Payment verification error:', error);
-        return res.redirect('/?payment=error');
     }
+
+    res.sendStatus(200);
+});
+
+app.get('/payment-success', (req, res) => {
+    res.send(`
+        <html>
+            <head>
+                <title>Payment Success</title>
+                <style>
+                    body { font-family: sans-serif; text-align: center; padding-top: 50px; }
+                </style>
+            </head>
+            <body>
+                <h2>✅ Payment Successful!</h2>
+                <p>You can now return to the chatbot.</p>
+                <script>
+                    setTimeout(() => {
+                        window.close(); // If opened in a new tab or window
+                    }, 3000);
+                </script>
+            </body>
+        </html>
+    `);
 });
 
 setUpChaBot(io);

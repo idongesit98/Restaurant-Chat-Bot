@@ -101,7 +101,7 @@ export const setUpChaBot = (io:Server) =>{
                     const total = lastOrder.items.reduce((sum, item) => sum + item.price, 0);
                     socket.emit("message", { text: `Your total is #${total}. Processing payment link.....` });
         
-                    const paymentResponse = await initializePayment('customer@gmail.com', total);
+                    const paymentResponse = await initializePayment('customer@gmail.com', total,deviceId);
                     if (paymentResponse?.data?.authorization_url) {
                         socket.emit("message", { text: `Click to pay: ${paymentResponse.data.authorization_url}` });
                     } else {

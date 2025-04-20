@@ -13,17 +13,22 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.initializePayment = void 0;
+exports.verifyPaystackSignature = verifyPaystackSignature;
 const axios_1 = __importDefault(require("axios"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const crypto_1 = __importDefault(require("crypto"));
 dotenv_1.default.config();
 const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET;
-const initializePayment = (email, amount) => __awaiter(void 0, void 0, void 0, function* () {
+const initializePayment = (email, amount, deviceId) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const response = yield axios_1.default.post("https://api.paystack.co/transaction/initialize", {
             email,
             amount: amount * 100,
             currency: "NGN",
-            callback_url: "http://localhost:3030/payment-callback"
+            callback_url: "https://598c-102-90-79-226.ngrok-free.app/payment-success",
+            metadata: {
+                deviceId
+            }
         }, {
             headers: {
                 Authorization: `Bearer ${PAYSTACK_SECRET}`,
@@ -38,3 +43,13 @@ const initializePayment = (email, amount) => __awaiter(void 0, void 0, void 0, f
     }
 });
 exports.initializePayment = initializePayment;
+function verifyPaystackSignature(req, res, buf) {
+    const hash = crypto_1.default
+        .createHmac("sha512", PAYSTACK_SECRET)
+        .update(buf)
+        .digest("hex");
+    const signature = req.headers["x-paystack-signature"];
+    if (signature !== hash) {
+        throw new Error("Invalid Paystack signature");
+    }
+}
